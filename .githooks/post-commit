@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# post-commit: auto-updates README Skills section and bumps registry version
+# when a new skills/*/SKILL.md file is committed.
+#
+# Install: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+# Avoid infinite loop: skip if this commit was hook-generated.
+LAST_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
+if [[ "$LAST_MSG" == "chore(setlist):"* ]]; then
+  exit 0
+fi
+
+# Find newly added SKILL.md files in the last commit.
+NEW_SKILLS=$(git diff-tree --no-commit-id -r --name-only --diff-filter=A HEAD \
+  | grep '^skills/[^/]*/SKILL\.md$' || true)
+
+[ -z "$NEW_SKILLS" ] && exit 0
+
+echo "🎵 New skill(s) detected — updating README and version..."
+
+# Run the update script.
+if ! node "$(git rev-parse --show-toplevel)/scripts/update-readme.mjs" $NEW_SKILLS; then
+  echo "⚠️  update-readme.mjs failed; skipping auto-commit."
+  exit 0
+fi
+
+# Stage only the files we changed.
+git add README.md registry.json
+
+# Check there is actually something staged.
+if git diff --cached --quiet; then
+  echo "No changes to commit."
+  exit 0
+fi
+
+# Commit without triggering this hook again (the prefix check above handles it).
+git commit --no-verify -m "chore(setlist): update README and bump version for new skill"
+
+echo "✓ Auto-commit created."

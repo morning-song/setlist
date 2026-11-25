@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morning-song.github.io/setlist/schema/plugin.schema.json",
+  "title": "Setlist Plugin",
+  "description": "Schema for a plugin entry in the Setlist Claude Code marketplace registry.",
+  "type": "object",
+  "required": ["id", "name", "description", "type", "author", "source", "tags", "added", "install"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique slug for this plugin (kebab-case, no spaces).",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name.",
+      "minLength": 1,
+      "maxLength": 60
+    },
+    "description": {
+      "type": "string",
+      "description": "What the plugin does. 1–3 sentences.",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "type": {
+      "type": "string",
+      "description": "The kind of Claude Code extension this is.",
+      "enum": ["skill", "mcp-server", "slash-command", "hook", "plugin"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Semver version string (optional).",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "url": { "type": "string", "format": "uri" },
+        "github": { "type": "string", "pattern": "^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?$" }
+      }
+    },
+    "source": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the source repository or documentation page."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Up to 8 lowercase kebab-case tags.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]?$",
+        "maxLength": 30
+      },
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true
+    },
+    "added": {
+      "type": "string",
+      "description": "ISO 8601 date when the plugin was added to the registry.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "featured": {
+      "type": "boolean",
+      "description": "Whether this plugin should be highlighted in the UI.",
+      "default": false
+    },
+    "install": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["skill", "mcp", "npm", "pip", "manual"],
+          "description": "How users install this plugin."
+        },
+        "command": {
+          "type": ["string", "null"],
+          "description": "The shell command to install (null if no shell command applies)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes shown to users about how to complete setup.",
+          "maxLength": 1000
+        }
+      }
+    }
+  }
+}

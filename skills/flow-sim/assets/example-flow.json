@@ -1,0 +1,77 @@
+{
+  "id": "example-shopper-pays-order",
+  "title": "Shopper pays for an order",
+  "fixture": true,
+  "generated": "2026-11-24",
+  "summary": "A shopper taps Pay now. The storefront API records a pending order and queues a payment capture, a worker charges the card at the payment provider, and the provider later confirms by webhook, which marks the order paid. The webhook signature check is not traced.",
+  "systems": [
+    { "id": "browser", "name": "Shopper’s browser", "sub": "storefront-web · React", "kind": "web", "role": "actor", "team": "Storefront",
+      "parts": [
+        { "id": "checkout", "kind": "screen", "name": "Checkout page",
+          "initial": { "title": "Checkout", "rows": [["Cart", "2 items"], ["Total", "$48.00"]], "button": "Pay now" } }
+      ] },
+    { "id": "api", "name": "Storefront API", "sub": "acme/storefront · Ruby", "kind": "service", "role": "core", "team": "Storefront",
+      "parts": [
+        { "id": "orders_api", "kind": "gate", "name": "POST /orders" },
+        { "id": "orders_db", "kind": "database", "name": "orders table" },
+        { "id": "jobs", "kind": "queue", "name": "payment jobs" },
+        { "id": "worker", "kind": "worker", "name": "Job worker" },
+        { "id": "hook_api", "kind": "gate", "name": "POST /webhooks/payments" }
+      ] },
+    { "id": "psp", "name": "Payment provider", "sub": "third party", "kind": "third_party", "role": "upstream",
+      "parts": [
+        { "id": "charges", "kind": "gate", "name": "Charges API" }
+      ] }
+  ],
+  "roads": [
+    { "id": "r_order", "from": "checkout", "to": "orders_api" },
+    { "id": "r_charge", "from": "worker", "to": "charges" },
+    { "id": "r_hook", "from": "charges", "to": "hook_api" }
+  ],
+  "steps": [
+    { "title": "Shopper taps Pay now", "systems": ["browser", "api"], "t": "t = 0 s",
+      "detail": "The page posts the cart. The API stores a pending order and queues a capture job, then answers right away. POST /orders, session cookie auth.",
+      "actions": [
+        { "do": "tap", "part": "checkout" },
+        { "do": "drive", "road": "r_order", "label": "POST /orders", "kind": "http" },
+        { "do": "write", "part": "orders_db", "text": "order 1042 · pending" },
+        { "do": "enqueue", "part": "jobs", "label": "capture 1042" },
+        { "do": "drive", "road": "r_order", "label": "202 Accepted", "kind": "response", "reverse": true },
+        { "do": "screen", "part": "checkout", "content": { "title": "Processing", "banner": { "text": "Payment in progress" } } }
+      ],
+      "evidence": [
+        { "repo": "acme/storefront-web", "path": "src/checkout/pay.ts", "line": 58, "sha": "a1b2c3d" },
+        { "repo": "acme/storefront", "path": "app/controllers/orders_controller.rb", "line": 31, "sha": "9f8e7d6" }
+      ] },
+    { "title": "Worker charges the card", "systems": ["api", "psp"], "t": "t ≈ 2 s · async",
+      "detail": "A worker takes the job and calls the provider. The call is synchronous; the provider answers “pending”. POST /v1/charges, API key auth.",
+      "actions": [
+        { "do": "dequeue", "part": "jobs", "worker": "worker" },
+        { "do": "drive", "road": "r_charge", "label": "POST /v1/charges", "kind": "http" },
+        { "do": "drive", "road": "r_charge", "label": "pending", "kind": "response", "reverse": true }
+      ],
+      "evidence": [
+        { "repo": "acme/storefront", "path": "app/jobs/capture_payment_job.rb", "line": 17, "sha": "9f8e7d6" },
+        { "repo": "acme/storefront", "path": "lib/psp/client.rb", "line": 44, "sha": "9f8e7d6" }
+      ] },
+    { "title": "Provider confirms by webhook", "systems": ["psp", "api"], "t": "t ≈ 17 s · async",
+      "detail": "The provider calls back when the charge settles. Nobody traced how the request is authenticated.",
+      "actions": [
+        { "do": "drive", "road": "r_hook", "label": "charge.succeeded", "kind": "webhook" },
+        { "do": "board", "part": "hook_api", "text": "Signature check?" }
+      ],
+      "unverified": true,
+      "question": "Does the webhook handler verify a signature, and with which scheme?" },
+    { "title": "Order marked paid", "systems": ["api", "browser"], "t": "t ≈ 17 s",
+      "detail": "The handler updates the order and the page shows the result on its next poll.",
+      "actions": [
+        { "do": "write", "part": "orders_db", "text": "order 1042 · paid" },
+        { "do": "screen", "part": "checkout", "content": { "title": "Thank you", "banner": { "text": "Order 1042 paid", "hot": true } } },
+        { "do": "toast", "part": "checkout", "text": "Payment received" }
+      ],
+      "evidence": [
+        { "repo": "acme/storefront", "path": "app/controllers/webhooks_controller.rb", "line": 22, "sha": "9f8e7d6" },
+        { "repo": "acme/storefront-web", "path": "src/checkout/poll.ts", "line": 12, "sha": "a1b2c3d" }
+      ] }
+  ]
+}

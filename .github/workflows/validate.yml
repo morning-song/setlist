@@ -1,0 +1,87 @@
+name: Validate registry
+
+on:
+  pull_request:
+    paths:
+      - registry.json
+      - schema/plugin.schema.json
+      - skills/**
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv dependencies
+        run: npm install ajv ajv-formats
+
+      - name: Check unique IDs and validate schema
+        run: |
+          node -e "
+            const Ajv = require('ajv');
+            const addFormats = require('ajv-formats');
+            const fs = require('fs');
+
+            const schema = JSON.parse(fs.readFileSync('schema/plugin.schema.json', 'utf8'));
+            const registry = JSON.parse(fs.readFileSync('registry.json', 'utf8'));
+            const plugins = registry.plugins;
+
+            if (!Array.isArray(plugins)) { console.error('registry.json must have a plugins array'); process.exit(1); }
+
+            const ids = new Set();
+            for (const p of plugins) {
+              if (ids.has(p.id)) { console.error('Duplicate id:', p.id); process.exit(1); }
+              ids.add(p.id);
+            }
+            console.log('IDs are unique. Total plugins:', plugins.length);
+
+            const ajv = new Ajv({ strict: false });
+            addFormats(ajv);
+            const validate = ajv.compile(schema);
+            let errors = 0;
+            for (const p of plugins) {
+              if (!validate(p)) {
+                console.error('Invalid plugin', p.id, JSON.stringify(validate.errors, null, 2));
+                errors++;
+              }
+            }
+            if (errors > 0) { process.exit(1); }
+            console.log('All', plugins.length, 'plugins are valid.');
+          "
+
+      - name: Check skills have SKILL.md with required frontmatter
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            const skillsDir = 'skills';
+            if (!fs.existsSync(skillsDir)) { console.log('No skills/ directory'); process.exit(0); }
+
+            let errors = 0;
+            for (const name of fs.readdirSync(skillsDir)) {
+              const skillPath = path.join(skillsDir, name, 'SKILL.md');
+              if (!fs.existsSync(skillPath)) {
+                console.error('Missing SKILL.md in skills/' + name);
+                errors++;
+                continue;
+              }
+              const text = fs.readFileSync(skillPath, 'utf8');
+              if (!text.match(/^---\n[\s\S]*?name:/m)) {
+                console.error('skills/' + name + '/SKILL.md is missing name in frontmatter');
+                errors++;
+              }
+              if (!text.match(/^---\n[\s\S]*?description:/m)) {
+                console.error('skills/' + name + '/SKILL.md is missing description in frontmatter');
+                errors++;
+              }
+            }
+            if (errors) process.exit(1);
+            console.log('All skills have valid SKILL.md files.');
+          "

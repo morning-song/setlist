@@ -1,0 +1,159 @@
+{
+  "$schema": "./schema/plugin.schema.json",
+  "version": "1",
+  "updated": "2026-11-25",
+  "plugins": [
+    {
+      "id": "dataviz",
+      "name": "Data Viz",
+      "description": "Design guidance for charts, graphs, dashboards, and data visualizations in any output medium — HTML artifacts, SVG, plotting libraries, or images. Produces consistent, accessible, brand-neutral visuals with a runnable color validator.",
+      "type": "skill",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/anthropics/claude-code",
+      "tags": ["visualization", "charts", "dashboard", "design"],
+      "added": "2026-11-25",
+      "featured": true,
+      "install": {
+        "type": "skill",
+        "command": null,
+        "notes": "Bundled with Claude Code. Invoke with the `dataviz` skill or trigger keywords: 'chart', 'graph', 'dashboard', 'data viz'."
+      }
+    },
+    {
+      "id": "code-review",
+      "name": "Code Review",
+      "description": "Review the current diff or a PR for correctness bugs, reuse/simplification cleanups, and efficiency improvements. Supports effort levels (low → max) and an ultra multi-agent cloud review mode. Can post findings as inline PR comments or apply fixes directly.",
+      "type": "skill",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/anthropics/claude-code",
+      "tags": ["code-review", "pr", "quality", "testing"],
+      "added": "2026-11-25",
+      "featured": true,
+      "install": {
+        "type": "skill",
+        "command": null,
+        "notes": "Bundled with Claude Code. Use `/code-review` or `/code-review ultra <PR#>`."
+      }
+    },
+    {
+      "id": "github-mcp",
+      "name": "GitHub MCP Server",
+      "description": "Official GitHub MCP server. Search code, manage issues and PRs, create branches, push files, and trigger CI — all from within Claude. The most widely used MCP server for developer workflows.",
+      "type": "mcp-server",
+      "author": {
+        "name": "GitHub",
+        "url": "https://github.com"
+      },
+      "source": "https://github.com/github/github-mcp-server",
+      "tags": ["github", "git", "pr", "issues", "ci"],
+      "added": "2026-11-25",
+      "featured": true,
+      "install": {
+        "type": "mcp",
+        "command": "npx @github/mcp-server",
+        "notes": "Requires a GitHub personal access token set as `GITHUB_PERSONAL_ACCESS_TOKEN`. Add to your MCP config in Claude Code settings."
+      }
+    },
+    {
+      "id": "filesystem-mcp",
+      "name": "Filesystem MCP Server",
+      "description": "Read and write files anywhere on your local machine via MCP. Useful for giving Claude access to directories outside the current workspace — a downloads folder, a shared drive mount, or a config directory.",
+      "type": "mcp-server",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/modelcontextprotocol/servers",
+      "tags": ["filesystem", "files", "local"],
+      "added": "2026-11-25",
+      "featured": false,
+      "install": {
+        "type": "mcp",
+        "command": "npx @modelcontextprotocol/server-filesystem /path/to/allowed/dir",
+        "notes": "Pass one or more allowed root directories as arguments. Claude can only read/write within those roots."
+      }
+    },
+    {
+      "id": "security-review",
+      "name": "Security Vulnerability Sweep",
+      "description": "Scans the codebase for OWASP top-10 and common security vulnerabilities — injection, XSS, SSRF, broken auth, insecure deserialization, and more. Reports findings with severity and remediation steps.",
+      "type": "skill",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/anthropics/claude-code",
+      "tags": ["security", "owasp", "vulnerabilities", "audit"],
+      "added": "2026-11-25",
+      "featured": false,
+      "install": {
+        "type": "skill",
+        "command": null,
+        "notes": "Bundled with Claude Code. Use the `security-vuln-sweep` skill."
+      }
+    },
+    {
+      "id": "pr-commit-push",
+      "name": "Commit, Push & PR",
+      "description": "One command to stage, commit with a generated message, push to remote, and open a pull request. Respects branch naming conventions, writes a structured PR description, and handles the common commit → PR workflow without leaving the chat.",
+      "type": "skill",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/anthropics/claude-code",
+      "tags": ["git", "pr", "commit", "workflow"],
+      "added": "2026-11-25",
+      "featured": false,
+      "install": {
+        "type": "skill",
+        "command": null,
+        "notes": "Bundled with Claude Code. Use the `commit-commands:commit-push-pr` skill."
+      }
+    },
+    {
+      "id": "flow-sim",
+      "name": "Flow Sim",
+      "description": "Turns a user flow spanning several services or repositories into an animated, self-contained HTML page showing who taps what, which service calls which, what is written or queued, and what returns by webhook or callback. Every hop is backed by a file, line, and commit, or drawn as unverified with an open question.",
+      "type": "skill",
+      "author": {
+        "name": "morning-song",
+        "url": "https://github.com/morning-song"
+      },
+      "source": "https://github.com/morning-song/setlist",
+      "tags": ["visualization", "architecture", "sequence-diagram", "cross-service"],
+      "added": "2026-11-25",
+      "featured": true,
+      "install": {
+        "type": "manual",
+        "command": null,
+        "notes": "Clone morning-song/setlist and copy skills/flow-sim/ into your project's .claude/skills/ directory. Requires Node 18+."
+      }
+    },
+    {
+      "id": "standup",
+      "name": "Engineering Standup",
+      "description": "Generates a structured standup update from your recent git activity, open PRs, and in-progress work. Formats it for Slack or your team's standup format — yesterday, today, blockers.",
+      "type": "skill",
+      "author": {
+        "name": "Anthropic",
+        "url": "https://anthropic.com"
+      },
+      "source": "https://github.com/anthropics/claude-code",
+      "tags": ["productivity", "standup", "slack", "workflow"],
+      "added": "2026-11-25",
+      "featured": false,
+      "install": {
+        "type": "skill",
+        "command": null,
+        "notes": "Bundled with Claude Code. Use the `engineering:standup` skill."
+      }
+    }
+  ]
+}
