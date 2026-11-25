@@ -1,22 +1,8 @@
 # Contributing to Setlist
 
-Thanks for sharing a plugin with the community!
-
 ## What belongs here
 
-Any extension for [Claude Code](https://claude.ai/code):
-
-- **Skills** — packaged reusable instructions (`.claude/skills/*.md` files distributed via a shareable link or org)
-- **MCP Servers** — servers that implement the [Model Context Protocol](https://modelcontextprotocol.io)
-- **Slash Commands** — custom `/commands` defined in a Claude Code project
-- **Hooks** — shell scripts wired into Claude Code's tool call lifecycle
-- **Plugins** — broader Claude Code UI/behavior extensions
-
-Requirements:
-
-- Has a public source URL (GitHub, npm, PyPI…)
-- Has clear install instructions
-- Not a duplicate of an existing entry (search first)
+Skills and other extensions for [Claude Code](https://claude.ai/code) — anything you've found useful and want to keep here.
 
 ## Adding a skill with bundled files
 
