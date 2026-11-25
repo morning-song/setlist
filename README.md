@@ -6,6 +6,14 @@ Personal collection of Claude Code skills and extensions.
 
 ---
 
+**Install a skill:**
+```bash
+git clone https://github.com/morning-song/setlist
+cp -r setlist/skills/<name> your-project/.claude/skills/
+```
+
+---
+
 ## Skills
 
 <!-- skills:start -->
